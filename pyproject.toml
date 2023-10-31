@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "battlesnake-utils"
+version = "1.0"
+description = "Rick's battlesnake utilities"
+authors = ["<rick.nicoletti@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.11.0"
+pandas = "^2.1.2"
+
+[tool.poetry.dev-dependencies]
+pytest-cov = "^2.7"
+pre-commit = "^2.9.3"
+autopep8 = "^1.5.4"
+flake8 = "^3.7"
+tox = "^3.14"
+pytest = "^6.0.1"
+ipython = "^7.24.1"
