@@ -1,4 +1,3 @@
-
 from typing import Optional, Union
 
 import sys
@@ -6,7 +5,7 @@ import copy
 import pandas as pd
 from time import sleep
 
-class Pos():
+class Pos:
     """
     An x,y position, with many helper methods
     """
@@ -14,28 +13,9 @@ class Pos():
     all_directions = ['left', 'up', 'right', 'down']
     ascii_for_direction = {'left': '←', 'up': '↑', 'right': '→', 'down': '↓'}
 
-    @classmethod
-    def turn_direction_left(cls, direction):
-        " turn left (relative to given direction) "
-        i = cls.all_directions.index(direction)
-        i = i - 1
-        if i < 0:
-            i = 3
-        return cls.all_directions[i]
-
-    @classmethod
-    def turn_direction_right(cls, direction):
-        " turn right (relative to given direction) "
-        i = cls.all_directions.index(direction)
-        i = i + 1
-        if i > 3:
-            i = 0
-        return cls.all_directions[i]
-        
-
-    # allow unnamed or named x and y, or a dict
     def __init__(self, x: Union[int, dict], y: int = None):
-        ' create from a dictionary with x and y keys, or as named parameters '
+        """ create from a dictionary with x and y keys, or as named parameters """
+        # allow unnamed or named x and y, or a dict
         if isinstance(x, dict):
             if 'x' not in x:
                 raise Exception("Pos constructor dict has no 'x' key")
@@ -50,7 +30,7 @@ class Pos():
             self.y = y
 
     def __eq__(self, other):
-        " two points are equal if they have the same x and y "
+        """ two points are equal if they have the same x and y """
         return self.x == other.x and self.y == other.y
 
     def __str__(self):
@@ -59,11 +39,32 @@ class Pos():
     def __hash__(self):
         return hash(self.__str__())
 
+    @classmethod
+    def turn_direction_left(cls, direction):
+        """ turn left (relative to given direction) """
+        i = cls.all_directions.index(direction)
+        i = i - 1
+        if i < 0:
+            i = 3
+        return cls.all_directions[i]
+
+    @classmethod
+    def turn_direction_right(cls, direction):
+        """ turn right (relative to given direction) """
+        i = cls.all_directions.index(direction)
+        i = i + 1
+        if i > 3:
+            i = 0
+        return cls.all_directions[i]
+
     def as_dict(self):
         return { 'x': self.x, 'y': self.y }
 
+    def as_tuple(self):
+        return self.x, self.y
+
     def distance_to(self, x: Union[int, dict], y: int = None):
-        " distance to another point "
+        """ distance to another point """
         # convert dict to x, y
         if isinstance(x, dict):
             y = x['y']
@@ -76,7 +77,7 @@ class Pos():
         return dist
 
     def moved_to(self, direction):
-        " return this position moved by 1 in given direction "
+        """ return this position moved by 1 in given direction """
         if direction == 'left':
             next_x = self.x - 1
             next_y = self.y
@@ -95,7 +96,7 @@ class Pos():
         return Pos(x=next_x, y=next_y)
 
     def direction_to(self, other):
-        " return directions(s) to other Pos "
+        """ return directions(s) to other Pos """
         if self == other:
             return []
 
@@ -113,16 +114,16 @@ class Pos():
         return dirs
 
 
-class Snake():
+class Snake:
     head_char = 'H'
     tail_char = 'T'
     def __init__(self, snake_dict: Optional[dict] = None):
         if snake_dict is None:
-            self.id = "0";
+            self.id = "0"
             self.name = ""
             self.length = 0
             self.health = 0
-            self.body = [];
+            self.body = []
             self.head = None
             self.tail = None
         else:
@@ -133,7 +134,8 @@ class Snake():
             self.body = []
             for seg in snake_dict['body']:
                 self.body.append(Pos(seg))
-            self.head = Pos(snake_dict['head'])
+            self.body_dict = [ pos.as_dict() for pos in self.body ]
+            self.head = self.body[0]
             self.tail = self.body[-1]
 
     def as_dict(self):
@@ -143,16 +145,16 @@ class Snake():
             'name': self.name,
             'health': self.health,
             'head': self.head.as_dict(),
+            'body': self.body_dict,
             'length': self.length,
             'shout': "",
             'squad': "",
             'customizations' : {},
         }
-        d['body'] = [ pos.as_dict() for pos in self.body ]
-        return(d)
+        return d
 
     def facing_direction(self):
-        " determine which direction this snake is facing "
+        """ determine which direction this snake is facing """
 
         # check if just starting a game
         if self.head == self.body[1]:
@@ -160,35 +162,33 @@ class Snake():
             # everytime calling this method
             return 'up'
 
-        print(f"facing_direction: body position [1] at {self.body[1]}")
-        print(f"facing_direction: body position [0] at {self.body[0]}")
         direction = self.body[1].direction_to( self.body[0])
         return direction[0]
 
     def pos_ahead(self):
-        " position in front of head "
+        """ position in front of head """
         return self.head.moved_to(self.facing_direction())
 
     def pos_to_right(self):
-        " position to right of head "
+        """ position to right of head """
         return self.head.moved_to(self.head.turn_direction_right(self.facing_direction()))
 
     def pos_to_left(self):
-        " position to left of head "
+        """ position to left of head """
         return self.head.moved_to(self.head.turn_direction_left(self.facing_direction()))
 
     def pos_ahead_to_right(self):
-        " forward one, right one "
+        """ forward one, right one """
         ahead = self.head.moved_to(self.facing_direction())
         return ahead.moved_to(self.head.turn_direction_right(self.facing_direction()))
 
     def pos_ahead_to_left(self):
-        " forward one, right one "
+        """ forward one, right one """
         ahead = self.head.moved_to(self.facing_direction())
         return ahead.moved_to(self.head.turn_direction_left(self.facing_direction()))
 
 
-class Board():
+class Board:
     def __init__(self, board_dict: Optional[dict] = None):
         if board_dict is None:
             self.width = 0
