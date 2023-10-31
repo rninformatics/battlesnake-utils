@@ -2,7 +2,7 @@
 name = "battlesnake-utils"
 version = "1.0"
 description = "Rick's battlesnake utilities"
-authors = ["<rick.nicoletti@gmail.com>"]
+authors = [ "Rick Nicoletti <rick.nicoletti@gmail.com>" ]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11.0"
